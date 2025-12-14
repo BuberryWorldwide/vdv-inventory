@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: vdv-mongodb
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    volumes:
+      - vdv_mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=vdv-inventory
+
+volumes:
+  vdv_mongo_data:
