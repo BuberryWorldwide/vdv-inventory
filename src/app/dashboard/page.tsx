@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 interface Stats {
   totalMachines: number;
@@ -19,15 +20,11 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const [machinesRes, storesRes, maintenanceRes] = await Promise.all([
-          fetch('/api/machines'),
-          fetch('/api/stores'),
-          fetch('/api/maintenance'),
+        const [machines, stores, maintenance] = await Promise.all([
+          api.getMachines(),
+          api.getStores(),
+          api.getMaintenanceLogs(),
         ]);
-
-        const machines = await machinesRes.json();
-        const stores = await storesRes.json();
-        const maintenance = await maintenanceRes.json();
 
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

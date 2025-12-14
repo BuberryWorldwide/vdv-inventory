@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 interface Machine {
   _id: string;
@@ -29,9 +30,7 @@ function NewMaintenanceContent() {
   });
 
   useEffect(() => {
-    fetch('/api/machines')
-      .then((res) => res.json())
-      .then(setMachines);
+    api.getMachines().then(setMachines).catch(console.error);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,21 +43,15 @@ function NewMaintenanceContent() {
       cost: form.cost ? Number(form.cost) : undefined,
     };
 
-    const res = await fetch('/api/maintenance', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (res.ok) {
+    try {
+      await api.createMaintenanceLog(payload);
       if (preselectedMachine) {
         router.push(`/dashboard/machines/${preselectedMachine}`);
       } else {
         router.push('/dashboard/maintenance');
       }
-    } else {
-      const data = await res.json();
-      alert(data.error || 'Failed to create log');
+    } catch (err: any) {
+      alert(err.message || 'Failed to create log');
       setLoading(false);
     }
   };

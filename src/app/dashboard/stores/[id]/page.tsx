@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 interface Store {
   _id: string;
@@ -39,27 +40,21 @@ export default function StoreDetailPage() {
   const [form, setForm] = useState<Partial<Store>>({});
 
   useEffect(() => {
-    fetch(`/api/stores/${params.id}`)
-      .then((res) => res.json())
+    api.getStore(params.id as string)
       .then((data) => {
         setStore(data);
         setForm(data);
-        setLoading(false);
-      });
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [params.id]);
 
   const handleSave = async () => {
-    const res = await fetch(`/api/stores/${params.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-
-    if (res.ok) {
-      const updated = await res.json();
+    try {
+      const updated = await api.updateStore(params.id as string, form);
       setStore({ ...store!, ...updated });
       setEditing(false);
-    } else {
+    } catch (err) {
       alert('Failed to update store');
     }
   };
@@ -67,10 +62,10 @@ export default function StoreDetailPage() {
   const handleDelete = async () => {
     if (!confirm('Delete this store? Machines will be unassigned.')) return;
 
-    const res = await fetch(`/api/stores/${params.id}`, { method: 'DELETE' });
-    if (res.ok) {
+    try {
+      await api.deleteStore(params.id as string);
       router.push('/dashboard/stores');
-    } else {
+    } catch (err) {
       alert('Failed to delete store');
     }
   };

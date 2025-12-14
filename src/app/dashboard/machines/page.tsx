@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { api } from '@/lib/api';
 
 interface Machine {
   _id: string;
@@ -30,11 +31,14 @@ function MachinesContent() {
 
   useEffect(() => {
     async function fetchMachines() {
-      const url = statusFilter ? `/api/machines?status=${statusFilter}` : '/api/machines';
-      const res = await fetch(url);
-      const data = await res.json();
-      setMachines(data);
-      setLoading(false);
+      try {
+        const data = await api.getMachines(statusFilter || undefined);
+        setMachines(data);
+      } catch (error) {
+        console.error('Failed to fetch machines:', error);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchMachines();
   }, [statusFilter]);

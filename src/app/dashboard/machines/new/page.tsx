@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 interface Store {
   _id: string;
@@ -30,9 +31,7 @@ export default function NewMachinePage() {
   });
 
   useEffect(() => {
-    fetch('/api/stores')
-      .then((res) => res.json())
-      .then(setStores);
+    api.getStores().then(setStores).catch(console.error);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,17 +45,11 @@ export default function NewMachinePage() {
       storeId: form.storeId || undefined,
     };
 
-    const res = await fetch('/api/machines', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (res.ok) {
+    try {
+      await api.createMachine(payload);
       router.push('/dashboard/machines');
-    } else {
-      const data = await res.json();
-      alert(data.error || 'Failed to create machine');
+    } catch (err: any) {
+      alert(err.message || 'Failed to create machine');
       setLoading(false);
     }
   };

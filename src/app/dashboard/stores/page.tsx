@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 interface Store {
   _id: string;
@@ -17,12 +18,10 @@ export default function StoresPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/stores')
-      .then((res) => res.json())
-      .then((data) => {
-        setStores(data);
-        setLoading(false);
-      });
+    api.getStores()
+      .then(setStores)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="text-center py-10">Loading...</div>;

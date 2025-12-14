@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 interface MaintenanceLog {
   _id: string;
@@ -26,12 +27,10 @@ export default function MaintenancePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/maintenance')
-      .then((res) => res.json())
-      .then((data) => {
-        setLogs(data);
-        setLoading(false);
-      });
+    api.getMaintenanceLogs()
+      .then(setLogs)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="text-center py-10">Loading...</div>;

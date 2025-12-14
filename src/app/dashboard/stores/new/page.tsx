@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 export default function NewStorePage() {
   const router = useRouter();
@@ -22,17 +23,11 @@ export default function NewStorePage() {
     e.preventDefault();
     setLoading(true);
 
-    const res = await fetch('/api/stores', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-
-    if (res.ok) {
+    try {
+      await api.createStore(form);
       router.push('/dashboard/stores');
-    } else {
-      const data = await res.json();
-      alert(data.error || 'Failed to create store');
+    } catch (err: any) {
+      alert(err.message || 'Failed to create store');
       setLoading(false);
     }
   };

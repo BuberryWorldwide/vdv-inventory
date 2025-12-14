@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -14,8 +15,8 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+  const handleLogout = () => {
+    api.logout();
     router.push('/');
   };
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 interface Store {
   _id: string;
@@ -33,29 +34,33 @@ export default function EditMachinePage() {
 
   useEffect(() => {
     async function fetchData() {
-      const [machineRes, storesRes] = await Promise.all([
-        fetch(`/api/machines/${params.id}`),
-        fetch('/api/stores'),
-      ]);
-      const machine = await machineRes.json();
-      setStores(await storesRes.json());
+      try {
+        const [machine, storesData] = await Promise.all([
+          api.getMachine(params.id as string),
+          api.getStores(),
+        ]);
+        setStores(storesData);
 
-      setForm({
-        machineId: machine.machineId || '',
-        gambinoMachineId: machine.gambinoMachineId || '',
-        serialNumber: machine.serialNumber || '',
-        manufacturer: machine.manufacturer || '',
-        model: machine.model || '',
-        purchaseDate: machine.purchaseDate ? machine.purchaseDate.split('T')[0] : '',
-        purchasePrice: machine.purchasePrice?.toString() || '',
-        romVersion: machine.romVersion || '',
-        currentLocation: machine.currentLocation || 'warehouse',
-        storeId: machine.storeId?._id || '',
-        status: machine.status || 'storage',
-        notes: machine.notes || '',
-        lockPin: machine.credentials?.lockPin || '',
-      });
-      setLoading(false);
+        setForm({
+          machineId: machine.machineId || '',
+          gambinoMachineId: machine.gambinoMachineId || '',
+          serialNumber: machine.serialNumber || '',
+          manufacturer: machine.manufacturer || '',
+          model: machine.model || '',
+          purchaseDate: machine.purchaseDate ? machine.purchaseDate.split('T')[0] : '',
+          purchasePrice: machine.purchasePrice?.toString() || '',
+          romVersion: machine.romVersion || '',
+          currentLocation: machine.currentLocation || 'warehouse',
+          storeId: machine.storeId?._id || '',
+          status: machine.status || 'storage',
+          notes: machine.notes || '',
+          lockPin: machine.credentials?.lockPin || '',
+        });
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchData();
   }, [params.id]);
@@ -72,17 +77,11 @@ export default function EditMachinePage() {
       credentials: form.lockPin ? { lockPin: form.lockPin } : undefined,
     };
 
-    const res = await fetch(`/api/machines/${params.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (res.ok) {
+    try {
+      await api.updateMachine(params.id as string, payload);
       router.push(`/dashboard/machines/${params.id}`);
-    } else {
-      const data = await res.json();
-      alert(data.error || 'Failed to update machine');
+    } catch (err: any) {
+      alert(err.message || 'Failed to update machine');
       setSaving(false);
     }
   };
@@ -90,10 +89,10 @@ export default function EditMachinePage() {
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this machine?')) return;
 
-    const res = await fetch(`/api/machines/${params.id}`, { method: 'DELETE' });
-    if (res.ok) {
+    try {
+      await api.deleteMachine(params.id as string);
       router.push('/dashboard/machines');
-    } else {
+    } catch (err) {
       alert('Failed to delete machine');
     }
   };

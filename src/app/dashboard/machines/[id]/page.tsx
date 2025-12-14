@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 interface Machine {
   _id: string;
@@ -47,13 +48,18 @@ export default function MachineDetailPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const [machineRes, logsRes] = await Promise.all([
-        fetch(`/api/machines/${params.id}`),
-        fetch(`/api/maintenance?machineId=${params.id}`),
-      ]);
-      setMachine(await machineRes.json());
-      setLogs(await logsRes.json());
-      setLoading(false);
+      try {
+        const [machineData, logsData] = await Promise.all([
+          api.getMachine(params.id as string),
+          api.getMaintenanceLogs(params.id as string),
+        ]);
+        setMachine(machineData);
+        setLogs(logsData);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchData();
   }, [params.id]);

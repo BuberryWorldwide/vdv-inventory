@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { api, isLoggedIn } from '@/lib/api';
 
 export default function LoginPage() {
   const [password, setPassword] = useState('');
@@ -9,25 +10,22 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    if (isLoggedIn()) {
+      router.push('/dashboard');
+    }
+  }, [router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-
-      if (res.ok) {
-        router.push('/dashboard');
-      } else {
-        setError('Invalid password');
-      }
+      await api.login(password);
+      router.push('/dashboard');
     } catch (err) {
-      setError('Connection error');
+      setError('Invalid password');
     } finally {
       setLoading(false);
     }

@@ -1,0 +1,164 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://vdv-api.gambino.gold';
+
+function getToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('auth-token');
+}
+
+export function setToken(token: string) {
+  localStorage.setItem('auth-token', token);
+}
+
+export function clearToken() {
+  localStorage.removeItem('auth-token');
+}
+
+export function isLoggedIn(): boolean {
+  return !!getToken();
+}
+
+async function fetchAPI(endpoint: string, options: RequestInit = {}) {
+  const token = getToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (token) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (res.status === 401) {
+    clearToken();
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
+    throw new Error('Unauthorized');
+  }
+
+  return res;
+}
+
+export const api = {
+  // Auth
+  login: async (password: string) => {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    if (!res.ok) throw new Error('Invalid password');
+    const data = await res.json();
+    setToken(data.token);
+    return data;
+  },
+
+  logout: () => {
+    clearToken();
+  },
+
+  // Machines
+  getMachines: async (status?: string) => {
+    const url = status ? `/api/machines?status=${status}` : '/api/machines';
+    const res = await fetchAPI(url);
+    return res.json();
+  },
+
+  getMachine: async (id: string) => {
+    const res = await fetchAPI(`/api/machines/${id}`);
+    return res.json();
+  },
+
+  createMachine: async (data: any) => {
+    const res = await fetchAPI('/api/machines', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
+
+  updateMachine: async (id: string, data: any) => {
+    const res = await fetchAPI(`/api/machines/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
+
+  deleteMachine: async (id: string) => {
+    const res = await fetchAPI(`/api/machines/${id}`, { method: 'DELETE' });
+    return res.json();
+  },
+
+  // Maintenance
+  getMaintenanceLogs: async (machineId?: string) => {
+    const url = machineId ? `/api/maintenance?machineId=${machineId}` : '/api/maintenance';
+    const res = await fetchAPI(url);
+    return res.json();
+  },
+
+  createMaintenanceLog: async (data: any) => {
+    const res = await fetchAPI('/api/maintenance', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
+
+  // Stores
+  getStores: async () => {
+    const res = await fetchAPI('/api/stores');
+    return res.json();
+  },
+
+  getStore: async (id: string) => {
+    const res = await fetchAPI(`/api/stores/${id}`);
+    return res.json();
+  },
+
+  createStore: async (data: any) => {
+    const res = await fetchAPI('/api/stores', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
+
+  updateStore: async (id: string, data: any) => {
+    const res = await fetchAPI(`/api/stores/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
+
+  deleteStore: async (id: string) => {
+    const res = await fetchAPI(`/api/stores/${id}`, { method: 'DELETE' });
+    return res.json();
+  },
+};
