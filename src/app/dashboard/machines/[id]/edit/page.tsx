@@ -5,15 +5,30 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 
+interface Store {
+  _id: string;
+  name: string;
+}
+
+interface Hub {
+  _id: string;
+  machineId: string;
+  name: string;
+}
+
 export default function EditMachinePage() {
   const router = useRouter();
   const params = useParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [machine, setMachine] = useState<any>(null);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [hubs, setHubs] = useState<Hub[]>([]);
   const [form, setForm] = useState({
     name: '',
     displayName: '',
+    hubId: '',
+    storeId: '',
     manufacturer: '',
     machineModel: '',
     serialNumber: '',
@@ -29,11 +44,19 @@ export default function EditMachinePage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const machineData = await api.getMachine(params.id as string);
+        const [machineData, storesData, hubsData] = await Promise.all([
+          api.getMachine(params.id as string),
+          api.getStores(),
+          api.getHubs(),
+        ]);
         setMachine(machineData);
+        setStores(storesData);
+        setHubs(hubsData);
         setForm({
           name: machineData.name || '',
           displayName: machineData.displayName || '',
+          hubId: machineData.hubId || '',
+          storeId: machineData.storeId?._id || '',
           manufacturer: machineData.manufacturer || '',
           machineModel: machineData.machineModel || '',
           serialNumber: machineData.serialNumber || '',
@@ -61,6 +84,8 @@ export default function EditMachinePage() {
     const payload = {
       name: form.name || undefined,
       displayName: form.displayName || undefined,
+      hubId: form.hubId || null,
+      storeId: form.storeId || null,
       manufacturer: form.manufacturer || undefined,
       machineModel: form.machineModel || undefined,
       serialNumber: form.serialNumber || undefined,
@@ -91,9 +116,7 @@ export default function EditMachinePage() {
     <div className="max-w-2xl mx-auto">
       <div className="mb-4 md:mb-6">
         <h1 className="text-xl md:text-2xl font-bold text-gray-900">Edit Machine</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          {machine.machineId} - Hub: {machine.hubId || 'Unassigned'}
-        </p>
+        <p className="text-gray-500 text-sm mt-1">{machine.machineId}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-4 md:p-6 space-y-4">
@@ -119,6 +142,43 @@ export default function EditMachinePage() {
               className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
             <p className="text-xs text-gray-400 mt-1">Name shown in Gambino Admin</p>
+          </div>
+        </div>
+
+        {/* Hub & Store Assignment */}
+        <div className="border-t pt-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Assignment</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Hub (Pi Device)</label>
+              <select
+                value={form.hubId}
+                onChange={(e) => setForm({ ...form, hubId: e.target.value })}
+                className="w-full border rounded px-3 py-3 md:py-2 text-base"
+              >
+                <option value="">Unassigned</option>
+                {hubs.map((hub) => (
+                  <option key={hub._id} value={hub.machineId}>
+                    {hub.name || hub.machineId}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Venue (Store)</label>
+              <select
+                value={form.storeId}
+                onChange={(e) => setForm({ ...form, storeId: e.target.value })}
+                className="w-full border rounded px-3 py-3 md:py-2 text-base"
+              >
+                <option value="">Not Assigned</option>
+                {stores.map((store) => (
+                  <option key={store._id} value={store._id}>
+                    {store.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 

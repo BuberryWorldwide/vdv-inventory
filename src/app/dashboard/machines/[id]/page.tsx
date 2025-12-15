@@ -95,7 +95,7 @@ export default function MachineDetailPage() {
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Venue</dt>
-              <dd className="font-medium">{machine.storeId?.storeName || '-'}</dd>
+              <dd className="font-medium">{machine.storeId?.storeName || machine.derivedVenue || '-'}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Game Type</dt>

@@ -12,6 +12,7 @@ interface Machine {
   displayName?: string;
   hubId?: string;
   storeId?: { _id: string; storeName: string };
+  derivedVenue?: string;
   status: string;
   physicalStatus?: string;
   manufacturer?: string;
@@ -207,7 +208,7 @@ function MachinesContent() {
                   {machine.hubId || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {machine.storeId?.storeName || '-'}
+                  {machine.storeId?.storeName || machine.derivedVenue || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {machine.physicalStatus ? (
