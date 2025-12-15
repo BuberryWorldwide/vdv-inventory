@@ -7,9 +7,9 @@ import { api } from '@/lib/api';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
-  { href: '/dashboard/machines', label: 'Machines' },
+  { href: '/dashboard/venues', label: 'Venues' },
+  { href: '/dashboard/machines', label: 'All Machines' },
   { href: '/dashboard/maintenance', label: 'Maintenance' },
-  { href: '/dashboard/stores', label: 'Stores' },
 ];
 
 export default function Navbar() {
