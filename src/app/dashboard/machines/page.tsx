@@ -27,6 +27,9 @@ interface Hub {
   name: string;
 }
 
+type SortField = 'machineId' | 'name' | 'makeModel' | 'hubId' | 'venue' | 'physicalStatus';
+type SortDirection = 'asc' | 'desc';
+
 const statusColors: Record<string, string> = {
   deployed: 'bg-green-100 text-green-800',
   storage: 'bg-gray-100 text-gray-800',
@@ -42,6 +45,21 @@ const physicalStatusOptions = [
   { value: 'decommissioned', label: 'Decommissioned' },
 ];
 
+// Sort icon component
+function SortIcon({ field, currentField, direction }: { field: SortField; currentField: SortField; direction: SortDirection }) {
+  const isActive = field === currentField;
+  return (
+    <span className="ml-1 inline-flex flex-col">
+      <svg className={`w-2 h-2 ${isActive && direction === 'asc' ? 'text-blue-600' : 'text-gray-300'}`} viewBox="0 0 8 4" fill="currentColor">
+        <path d="M4 0L8 4H0L4 0Z" />
+      </svg>
+      <svg className={`w-2 h-2 -mt-0.5 ${isActive && direction === 'desc' ? 'text-blue-600' : 'text-gray-300'}`} viewBox="0 0 8 4" fill="currentColor">
+        <path d="M4 4L0 0H8L4 4Z" />
+      </svg>
+    </span>
+  );
+}
+
 function MachinesContent() {
   const [machines, setMachines] = useState<Machine[]>([]);
   const [hubs, setHubs] = useState<Hub[]>([]);
@@ -49,6 +67,8 @@ function MachinesContent() {
   const [search, setSearch] = useState('');
   const [hubFilter, setHubFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [sortField, setSortField] = useState<SortField>('machineId');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -74,8 +94,18 @@ function MachinesContent() {
     fetchData();
   }, []);
 
-  const filteredMachines = useMemo(() => {
-    return machines.filter((machine) => {
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const filteredAndSortedMachines = useMemo(() => {
+    // First filter
+    const filtered = machines.filter((machine) => {
       const searchLower = search.toLowerCase();
       const matchesSearch = search === '' ||
         machine.machineId.toLowerCase().includes(searchLower) ||
@@ -84,14 +114,51 @@ function MachinesContent() {
         (machine.manufacturer || '').toLowerCase().includes(searchLower) ||
         (machine.machineModel || '').toLowerCase().includes(searchLower) ||
         (machine.serialNumber || '').toLowerCase().includes(searchLower) ||
-        (machine.storeId?.storeName || '').toLowerCase().includes(searchLower);
+        (machine.storeId?.storeName || '').toLowerCase().includes(searchLower) ||
+        (machine.derivedVenue || '').toLowerCase().includes(searchLower);
 
       const matchesHub = hubFilter === '' || machine.hubId === hubFilter;
       const matchesStatus = statusFilter === '' || machine.physicalStatus === statusFilter;
 
       return matchesSearch && matchesHub && matchesStatus;
     });
-  }, [machines, search, hubFilter, statusFilter]);
+
+    // Then sort
+    return filtered.sort((a, b) => {
+      let aVal: string = '';
+      let bVal: string = '';
+
+      switch (sortField) {
+        case 'machineId':
+          aVal = a.machineId || '';
+          bVal = b.machineId || '';
+          break;
+        case 'name':
+          aVal = a.displayName || a.name || '';
+          bVal = b.displayName || b.name || '';
+          break;
+        case 'makeModel':
+          aVal = `${a.manufacturer || ''} ${a.machineModel || ''}`.trim();
+          bVal = `${b.manufacturer || ''} ${b.machineModel || ''}`.trim();
+          break;
+        case 'hubId':
+          aVal = a.hubId || '';
+          bVal = b.hubId || '';
+          break;
+        case 'venue':
+          aVal = a.storeId?.storeName || a.derivedVenue || '';
+          bVal = b.storeId?.storeName || b.derivedVenue || '';
+          break;
+        case 'physicalStatus':
+          aVal = a.physicalStatus || '';
+          bVal = b.physicalStatus || '';
+          break;
+      }
+
+      const comparison = aVal.localeCompare(bVal, undefined, { numeric: true, sensitivity: 'base' });
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [machines, search, hubFilter, statusFilter, sortField, sortDirection]);
 
   if (loading) return <div className="text-center py-10">Loading...</div>;
 
@@ -100,7 +167,7 @@ function MachinesContent() {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4 md:mb-6">
         <h1 className="text-xl md:text-2xl font-bold text-gray-900">
           Machines
-          <span className="text-gray-400 font-normal text-base ml-2">({filteredMachines.length})</span>
+          <span className="text-gray-400 font-normal text-base ml-2">({filteredAndSortedMachines.length})</span>
         </h1>
       </div>
 
@@ -142,7 +209,7 @@ function MachinesContent() {
 
       {/* Mobile card view */}
       <div className="md:hidden space-y-3">
-        {filteredMachines.map((machine) => (
+        {filteredAndSortedMachines.map((machine) => (
           <Link key={machine._id} href={`/dashboard/machines/${machine._id}`}>
             <div className="bg-white rounded-lg shadow p-4">
               <div className="flex justify-between items-start">
@@ -157,7 +224,7 @@ function MachinesContent() {
                     </p>
                   )}
                   <p className="text-xs text-gray-400 mt-1">
-                    Hub: {machine.hubId || 'Unassigned'}
+                    {machine.storeId?.storeName || machine.derivedVenue || 'Unassigned'}
                   </p>
                 </div>
                 {machine.physicalStatus && (
@@ -169,7 +236,7 @@ function MachinesContent() {
             </div>
           </Link>
         ))}
-        {filteredMachines.length === 0 && (
+        {filteredAndSortedMachines.length === 0 && (
           <div className="text-center py-10 text-gray-500">No machines found</div>
         )}
       </div>
@@ -179,17 +246,65 @@ function MachinesContent() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Make/Model</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hub</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venue</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => handleSort('machineId')}
+              >
+                <span className="flex items-center">
+                  ID
+                  <SortIcon field="machineId" currentField={sortField} direction={sortDirection} />
+                </span>
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => handleSort('name')}
+              >
+                <span className="flex items-center">
+                  Name
+                  <SortIcon field="name" currentField={sortField} direction={sortDirection} />
+                </span>
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => handleSort('makeModel')}
+              >
+                <span className="flex items-center">
+                  Make/Model
+                  <SortIcon field="makeModel" currentField={sortField} direction={sortDirection} />
+                </span>
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => handleSort('hubId')}
+              >
+                <span className="flex items-center">
+                  Hub
+                  <SortIcon field="hubId" currentField={sortField} direction={sortDirection} />
+                </span>
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => handleSort('venue')}
+              >
+                <span className="flex items-center">
+                  Venue
+                  <SortIcon field="venue" currentField={sortField} direction={sortDirection} />
+                </span>
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
+                onClick={() => handleSort('physicalStatus')}
+              >
+                <span className="flex items-center">
+                  Status
+                  <SortIcon field="physicalStatus" currentField={sortField} direction={sortDirection} />
+                </span>
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredMachines.map((machine) => (
+            {filteredAndSortedMachines.map((machine) => (
               <tr key={machine._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {machine.machineId}
@@ -229,7 +344,7 @@ function MachinesContent() {
                 </td>
               </tr>
             ))}
-            {filteredMachines.length === 0 && (
+            {filteredAndSortedMachines.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-6 py-10 text-center text-gray-500">
                   No machines found
