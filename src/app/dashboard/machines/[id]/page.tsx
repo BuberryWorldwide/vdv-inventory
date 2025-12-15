@@ -27,6 +27,21 @@ const statusColors: Record<string, string> = {
   decommissioned: 'bg-red-100 text-red-800',
 };
 
+// Helper to format machine name for display
+function formatMachineName(machine: any): string {
+  if (machine.displayName) return machine.displayName;
+  const idToFormat = machine.originalMachineId || machine.machineId;
+  const machineMatch = idToFormat.match(/machine[_-]?(\d+)$/i);
+  if (machineMatch) {
+    return `Machine ${machineMatch[1].padStart(2, '0')}`;
+  }
+  if (machine.name && machine.name !== idToFormat) {
+    return machine.name;
+  }
+  return idToFormat.replace(/^(pi-\d+-\w+-\d+_)/, '').replace(/_/g, ' ').replace(/-/g, ' ')
+    .split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
 export default function MachineDetailPage() {
   const params = useParams();
   const [machine, setMachine] = useState<any>(null);
@@ -113,7 +128,7 @@ const handleGenerateQR = async () => {
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-            {machine.displayName || machine.name || machine.machineId}
+            {formatMachineName(machine)}
           </h1>
           <p className="text-gray-500">{machine.machineId}</p>
           {machine.manufacturer && (

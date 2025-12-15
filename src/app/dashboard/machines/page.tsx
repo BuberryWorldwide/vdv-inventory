@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 interface Machine {
   _id: string;
   machineId: string;
+  originalMachineId?: string;
   name: string;
   displayName?: string;
   gameTitle?: string;
@@ -23,6 +24,41 @@ interface Machine {
   location?: string;
   credentials?: { lockPin?: string; attendantPin?: string };
   inventoryNotes?: string;
+}
+
+// Helper to format machine name for display
+function formatMachineName(machine: Machine): string {
+  // If displayName is set, use it
+  if (machine.displayName) return machine.displayName;
+
+  // Try to format originalMachineId nicely (machine_01 -> "Machine 01")
+  const idToFormat = machine.originalMachineId || machine.machineId;
+
+  // Handle formats like "machine_01", "machine_07", etc.
+  const machineMatch = idToFormat.match(/^machine[_-]?(\d+)$/i);
+  if (machineMatch) {
+    return `Machine ${machineMatch[1].padStart(2, '0')}`;
+  }
+
+  // Handle composite IDs like "pi-2-nimbus-1_machine_01" - extract the machine part
+  const compositeMatch = idToFormat.match(/machine[_-]?(\d+)$/i);
+  if (compositeMatch) {
+    return `Machine ${compositeMatch[1].padStart(2, '0')}`;
+  }
+
+  // Handle other formats - just capitalize and clean up
+  if (machine.name && machine.name !== idToFormat) {
+    return machine.name;
+  }
+
+  // Last resort: clean up the ID
+  return idToFormat
+    .replace(/^(pi-\d+-\w+-\d+_)/, '') // Remove hub prefix
+    .replace(/_/g, ' ')
+    .replace(/-/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }
 
 interface Store {
@@ -229,8 +265,8 @@ function MachinesContent() {
           bVal = b.machineId || '';
           break;
         case 'displayName':
-          aVal = a.displayName || a.name || '';
-          bVal = b.displayName || b.name || '';
+          aVal = formatMachineName(a);
+          bVal = formatMachineName(b);
           break;
         case 'gameTitle':
           aVal = a.gameTitle || '';
@@ -584,7 +620,7 @@ function MachinesContent() {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-medium text-gray-900 truncate">
-                      {machine.displayName || machine.name || machine.machineId}
+                      {formatMachineName(machine)}
                     </p>
                     <p className="text-xs text-gray-500">{machine.machineId}</p>
                   </div>
@@ -755,9 +791,12 @@ function MachinesContent() {
                             value={editForm?.displayName || ''}
                             onChange={(e) => setEditForm({ ...editForm!, displayName: e.target.value })}
                             className="w-full border rounded px-1.5 py-0.5 text-sm"
+                            placeholder={formatMachineName(machine)}
                           />
                         ) : (
-                          <span className="text-gray-700">{machine.displayName || machine.name || '-'}</span>
+                          <span className={machine.displayName ? 'text-gray-900 font-medium' : 'text-gray-600'}>
+                            {formatMachineName(machine)}
+                          </span>
                         )}
                       </td>
                     )}
