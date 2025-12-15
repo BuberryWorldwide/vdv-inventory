@@ -213,10 +213,10 @@ const handleGenerateQR = async () => {
             disabled={generatingQR}
             className="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
           >
-            {generatingQR ? 'Generating...' : machine.qrCode ? 'Regenerate' : 'Generate QR'}
+            {generatingQR ? 'Generating...' : (machine.qrCode?.startsWith('http') ? 'Regenerate' : 'Generate QR')}
           </button>
         </div>
-        {machine.qrCode ? (
+        {machine.qrCode?.startsWith('http') && machine.qrCode.length < 200 ? (
           <div className="flex flex-col items-center">
             <div className="bg-white p-4 border rounded-lg">
               <QRCodeSVG value={machine.qrCode} size={180} />
