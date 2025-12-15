@@ -15,6 +15,9 @@ export default function NewMachinePage() {
   const router = useRouter();
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showNewStore, setShowNewStore] = useState(false);
+  const [newStore, setNewStore] = useState({ storeId: '', name: '', address: '' });
+  const [creatingStore, setCreatingStore] = useState(false);
   const [form, setForm] = useState({
     machineId: '',
     gambinoMachineId: '',
@@ -33,6 +36,25 @@ export default function NewMachinePage() {
   useEffect(() => {
     api.getStores().then(setStores).catch(console.error);
   }, []);
+
+  const handleCreateStore = async () => {
+    if (!newStore.storeId || !newStore.name) {
+      alert('Store ID and Name are required');
+      return;
+    }
+    setCreatingStore(true);
+    try {
+      const created = await api.createStore(newStore);
+      setStores([...stores, created]);
+      setForm({ ...form, storeId: created._id });
+      setShowNewStore(false);
+      setNewStore({ storeId: '', name: '', address: '' });
+    } catch (err: any) {
+      alert(err.message || 'Failed to create store');
+    } finally {
+      setCreatingStore(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,20 +187,75 @@ export default function NewMachinePage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Store Assignment</label>
-            <select
-              value={form.storeId}
-              onChange={(e) => setForm({ ...form, storeId: e.target.value })}
-              className="w-full border rounded px-3 py-3 md:py-2 text-base"
-            >
-              <option value="">None (Warehouse)</option>
-              {stores.map((store) => (
-                <option key={store._id} value={store._id}>
-                  {store.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-2">
+              <select
+                value={form.storeId}
+                onChange={(e) => {
+                  if (e.target.value === '__new__') {
+                    setShowNewStore(true);
+                  } else {
+                    setForm({ ...form, storeId: e.target.value });
+                  }
+                }}
+                className="flex-1 border rounded px-3 py-3 md:py-2 text-base"
+              >
+                <option value="">Warehouse</option>
+                {stores.map((store) => (
+                  <option key={store._id} value={store._id}>
+                    {store.name}
+                  </option>
+                ))}
+                <option value="__new__">+ Add New Store</option>
+              </select>
+            </div>
           </div>
         </div>
+
+        {showNewStore && (
+          <div className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50 space-y-3">
+            <div className="flex justify-between items-center">
+              <h3 className="font-medium text-gray-900">Add New Store</h3>
+              <button
+                type="button"
+                onClick={() => setShowNewStore(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="Store ID *"
+                value={newStore.storeId}
+                onChange={(e) => setNewStore({ ...newStore, storeId: e.target.value })}
+                className="border rounded px-3 py-2 text-base"
+              />
+              <input
+                type="text"
+                placeholder="Store Name *"
+                value={newStore.name}
+                onChange={(e) => setNewStore({ ...newStore, name: e.target.value })}
+                className="border rounded px-3 py-2 text-base"
+              />
+            </div>
+            <input
+              type="text"
+              placeholder="Address (optional)"
+              value={newStore.address}
+              onChange={(e) => setNewStore({ ...newStore, address: e.target.value })}
+              className="w-full border rounded px-3 py-2 text-base"
+            />
+            <button
+              type="button"
+              onClick={handleCreateStore}
+              disabled={creatingStore}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              {creatingStore ? 'Creating...' : 'Create Store'}
+            </button>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>

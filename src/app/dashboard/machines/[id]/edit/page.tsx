@@ -16,6 +16,9 @@ export default function EditMachinePage() {
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showNewStore, setShowNewStore] = useState(false);
+  const [newStore, setNewStore] = useState({ storeId: '', name: '', address: '' });
+  const [creatingStore, setCreatingStore] = useState(false);
   const [form, setForm] = useState({
     machineId: '',
     gambinoMachineId: '',
@@ -65,6 +68,25 @@ export default function EditMachinePage() {
     fetchData();
   }, [params.id]);
 
+  const handleCreateStore = async () => {
+    if (!newStore.storeId || !newStore.name) {
+      alert('Store ID and Name are required');
+      return;
+    }
+    setCreatingStore(true);
+    try {
+      const created = await api.createStore(newStore);
+      setStores([...stores, created]);
+      setForm({ ...form, storeId: created._id });
+      setShowNewStore(false);
+      setNewStore({ storeId: '', name: '', address: '' });
+    } catch (err: any) {
+      alert(err.message || 'Failed to create store');
+    } finally {
+      setCreatingStore(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -100,10 +122,10 @@ export default function EditMachinePage() {
   if (loading) return <div className="text-center py-10">Loading...</div>;
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Machine</h1>
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+    <div className="max-w-2xl mx-auto">
+      <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">Edit Machine</h1>
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-4 md:p-6 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Machine ID *</label>
             <input
@@ -111,7 +133,7 @@ export default function EditMachinePage() {
               required
               value={form.machineId}
               onChange={(e) => setForm({ ...form, machineId: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
           </div>
           <div>
@@ -120,7 +142,7 @@ export default function EditMachinePage() {
               type="text"
               value={form.gambinoMachineId}
               onChange={(e) => setForm({ ...form, gambinoMachineId: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
           </div>
         </div>
@@ -132,11 +154,11 @@ export default function EditMachinePage() {
             required
             value={form.serialNumber}
             onChange={(e) => setForm({ ...form, serialNumber: e.target.value })}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 md:py-2 text-base"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Manufacturer *</label>
             <input
@@ -144,7 +166,7 @@ export default function EditMachinePage() {
               required
               value={form.manufacturer}
               onChange={(e) => setForm({ ...form, manufacturer: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
           </div>
           <div>
@@ -154,19 +176,19 @@ export default function EditMachinePage() {
               required
               value={form.model}
               onChange={(e) => setForm({ ...form, model: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label>
             <input
               type="date"
               value={form.purchaseDate}
               onChange={(e) => setForm({ ...form, purchaseDate: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
           </div>
           <div>
@@ -175,19 +197,19 @@ export default function EditMachinePage() {
               type="number"
               value={form.purchasePrice}
               onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">ROM Version</label>
             <input
               type="text"
               value={form.romVersion}
               onChange={(e) => setForm({ ...form, romVersion: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
           </div>
           <div>
@@ -196,18 +218,18 @@ export default function EditMachinePage() {
               type="text"
               value={form.lockPin}
               onChange={(e) => setForm({ ...form, lockPin: e.target.value })}
-              className="w-full border rounded px-3 py-2 font-mono"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base font-mono"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <select
               value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             >
               <option value="storage">In Storage</option>
               <option value="deployed">Deployed</option>
@@ -219,45 +241,98 @@ export default function EditMachinePage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Store Assignment</label>
             <select
               value={form.storeId}
-              onChange={(e) => setForm({ ...form, storeId: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              onChange={(e) => {
+                if (e.target.value === '__new__') {
+                  setShowNewStore(true);
+                } else {
+                  setForm({ ...form, storeId: e.target.value });
+                }
+              }}
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             >
-              <option value="">None (Warehouse)</option>
+              <option value="">Warehouse</option>
               {stores.map((store) => (
                 <option key={store._id} value={store._id}>
                   {store.name}
                 </option>
               ))}
+              <option value="__new__">+ Add New Store</option>
             </select>
           </div>
         </div>
+
+        {showNewStore && (
+          <div className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50 space-y-3">
+            <div className="flex justify-between items-center">
+              <h3 className="font-medium text-gray-900">Add New Store</h3>
+              <button
+                type="button"
+                onClick={() => setShowNewStore(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="Store ID *"
+                value={newStore.storeId}
+                onChange={(e) => setNewStore({ ...newStore, storeId: e.target.value })}
+                className="border rounded px-3 py-2 text-base"
+              />
+              <input
+                type="text"
+                placeholder="Store Name *"
+                value={newStore.name}
+                onChange={(e) => setNewStore({ ...newStore, name: e.target.value })}
+                className="border rounded px-3 py-2 text-base"
+              />
+            </div>
+            <input
+              type="text"
+              placeholder="Address (optional)"
+              value={newStore.address}
+              onChange={(e) => setNewStore({ ...newStore, address: e.target.value })}
+              className="w-full border rounded px-3 py-2 text-base"
+            />
+            <button
+              type="button"
+              onClick={handleCreateStore}
+              disabled={creatingStore}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              {creatingStore ? 'Creating...' : 'Create Store'}
+            </button>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
           <textarea
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 md:py-2 text-base"
             rows={3}
           />
         </div>
 
-        <div className="flex justify-between pt-4">
+        <div className="flex flex-col md:flex-row md:justify-between gap-4 pt-4">
           <button
             type="button"
             onClick={handleDelete}
-            className="text-red-600 hover:text-red-800"
+            className="text-red-600 hover:text-red-800 order-last md:order-first"
           >
             Delete Machine
           </button>
-          <div className="flex gap-4">
-            <Link href={`/dashboard/machines/${params.id}`} className="px-6 py-2 border rounded hover:bg-gray-50">
+          <div className="flex flex-col-reverse md:flex-row gap-3 md:gap-4">
+            <Link href={`/dashboard/machines/${params.id}`} className="px-6 py-3 md:py-2 border rounded hover:bg-gray-50 text-center">
               Cancel
             </Link>
             <button
               type="submit"
               disabled={saving}
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              className="bg-blue-600 text-white px-6 py-3 md:py-2 rounded hover:bg-blue-700 disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
