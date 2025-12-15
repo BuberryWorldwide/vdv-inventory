@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 
@@ -22,9 +22,20 @@ const typeColors: Record<string, string> = {
   other: 'bg-gray-100 text-gray-800',
 };
 
+const typeOptions = [
+  { value: '', label: 'All Types' },
+  { value: 'preventive', label: 'Preventive' },
+  { value: 'repair', label: 'Repair' },
+  { value: 'install', label: 'Install' },
+  { value: 'move', label: 'Move' },
+  { value: 'other', label: 'Other' },
+];
+
 export default function MaintenancePage() {
   const [logs, setLogs] = useState<MaintenanceLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
 
   useEffect(() => {
     api.getMaintenanceLogs()
@@ -33,23 +44,63 @@ export default function MaintenancePage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const filteredLogs = useMemo(() => {
+    return logs.filter((log) => {
+      const matchesSearch = search === '' ||
+        (log.machineId?.machineId || '').toLowerCase().includes(search.toLowerCase()) ||
+        (log.machineId?.manufacturer || '').toLowerCase().includes(search.toLowerCase()) ||
+        (log.machineId?.model || '').toLowerCase().includes(search.toLowerCase()) ||
+        log.technician.toLowerCase().includes(search.toLowerCase()) ||
+        log.description.toLowerCase().includes(search.toLowerCase());
+
+      const matchesType = typeFilter === '' || log.type === typeFilter;
+
+      return matchesSearch && matchesType;
+    });
+  }, [logs, search, typeFilter]);
+
   if (loading) return <div className="text-center py-10">Loading...</div>;
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4 md:mb-6">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Maintenance</h1>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+          Maintenance
+          <span className="text-gray-400 font-normal text-base ml-2">({filteredLogs.length})</span>
+        </h1>
         <Link
           href="/dashboard/maintenance/new"
-          className="bg-blue-600 text-white px-3 py-2 text-sm md:px-4 md:text-base rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-3 py-2 text-sm md:px-4 md:text-base rounded hover:bg-blue-700 text-center"
         >
           Log Maintenance
         </Link>
       </div>
 
+      {/* Search and Filters */}
+      <div className="bg-white rounded-lg shadow p-3 md:p-4 mb-4 space-y-3 md:space-y-0 md:flex md:gap-4">
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Search machine, technician, description..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border rounded px-3 py-2 text-base"
+          />
+        </div>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="w-full md:w-auto border rounded px-3 py-2 text-base"
+        >
+          {typeOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      </div>
+
       {/* Mobile card view */}
       <div className="md:hidden space-y-3">
-        {logs.map((log) => (
+        {filteredLogs.map((log) => (
           <div key={log._id} className="bg-white rounded-lg shadow p-4">
             <div className="flex justify-between items-start mb-2">
               <div>
@@ -70,7 +121,7 @@ export default function MaintenancePage() {
             </div>
           </div>
         ))}
-        {logs.length === 0 && (
+        {filteredLogs.length === 0 && (
           <div className="text-center py-10 text-gray-500">No maintenance logs found</div>
         )}
       </div>
@@ -89,7 +140,7 @@ export default function MaintenancePage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {logs.map((log) => (
+            {filteredLogs.map((log) => (
               <tr key={log._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {new Date(log.date).toLocaleDateString()}
@@ -118,7 +169,7 @@ export default function MaintenancePage() {
                 </td>
               </tr>
             ))}
-            {logs.length === 0 && (
+            {filteredLogs.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
                   No maintenance logs found
