@@ -139,6 +139,10 @@ const handleGenerateQR = async () => {
               <dd className="font-medium">{machine.displayName || <span className="text-gray-300">Not set</span>}</dd>
             </div>
             <div className="flex justify-between">
+              <dt className="text-gray-500">Game Title</dt>
+              <dd className="font-medium">{machine.gameTitle || <span className="text-gray-300">Not set</span>}</dd>
+            </div>
+            <div className="flex justify-between">
               <dt className="text-gray-500">Manufacturer</dt>
               <dd className="font-medium">{machine.manufacturer || <span className="text-gray-300">Not set</span>}</dd>
             </div>

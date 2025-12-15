@@ -27,6 +27,7 @@ export default function EditMachinePage() {
   const [form, setForm] = useState({
     name: '',
     displayName: '',
+    gameTitle: '',
     hubId: '',
     storeId: '',
     manufacturer: '',
@@ -55,6 +56,7 @@ export default function EditMachinePage() {
         setForm({
           name: machineData.name || '',
           displayName: machineData.displayName || '',
+          gameTitle: machineData.gameTitle || '',
           hubId: machineData.hubId || '',
           storeId: machineData.storeId?._id || '',
           manufacturer: machineData.manufacturer || '',
@@ -84,6 +86,7 @@ export default function EditMachinePage() {
     const payload = {
       name: form.name || undefined,
       displayName: form.displayName || undefined,
+      gameTitle: form.gameTitle || undefined,
       hubId: form.hubId || null,
       storeId: form.storeId || null,
       manufacturer: form.manufacturer || undefined,
@@ -120,7 +123,7 @@ export default function EditMachinePage() {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-4 md:p-6 space-y-4">
-        {/* Display Name */}
+        {/* Display Name & Game Title */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
@@ -134,15 +137,28 @@ export default function EditMachinePage() {
             <p className="text-xs text-gray-400 mt-1">Friendly name for this machine</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Gambino Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Game Title</label>
             <input
               type="text"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="e.g., Buffalo Gold, Dragon Link"
+              value={form.gameTitle}
+              onChange={(e) => setForm({ ...form, gameTitle: e.target.value })}
               className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
-            <p className="text-xs text-gray-400 mt-1">Name shown in Gambino Admin</p>
+            <p className="text-xs text-gray-400 mt-1">Game installed on this machine</p>
           </div>
+        </div>
+
+        {/* Gambino Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Gambino Name</label>
+          <input
+            type="text"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            className="w-full border rounded px-3 py-3 md:py-2 text-base"
+          />
+          <p className="text-xs text-gray-400 mt-1">Name shown in Gambino Admin</p>
         </div>
 
         {/* Hub & Store Assignment */}
