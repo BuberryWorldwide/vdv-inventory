@@ -193,4 +193,69 @@ export const api = {
     const res = await fetchAPI(`/api/stores/${id}`, { method: 'DELETE' });
     return res.json();
   },
+
+  // Asset Tags
+  getTags: async (filters?: { status?: string }) => {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    const url = params.toString() ? `/api/tags?${params}` : '/api/tags';
+    const res = await fetchAPI(url);
+    return res.json();
+  },
+
+  getTagByToken: async (token: string) => {
+    const res = await fetch(`${API_URL}/api/tags/${token}`);
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
+
+  generateTags: async (count: number) => {
+    const res = await fetchAPI('/api/tags/generate', {
+      method: 'POST',
+      body: JSON.stringify({ count }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
+
+  linkTagToMachine: async (token: string, machineId: string) => {
+    const res = await fetchAPI(`/api/tags/${token}/link`, {
+      method: 'POST',
+      body: JSON.stringify({ machineId }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
+
+  unlinkTag: async (token: string) => {
+    const res = await fetchAPI(`/api/tags/${token}/unlink`, {
+      method: 'POST',
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
+
+  createMachineWithTag: async (token: string, machineData: any) => {
+    const res = await fetchAPI(`/api/tags/${token}/create-machine`, {
+      method: 'POST',
+      body: JSON.stringify(machineData),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
 };

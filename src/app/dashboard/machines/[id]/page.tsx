@@ -14,6 +14,12 @@ interface MaintenanceLog {
   description: string;
 }
 
+interface Tag {
+  _id: string;
+  token: string;
+  status: string;
+}
+
 const statusColors: Record<string, string> = {
   deployed: 'bg-green-100 text-green-800',
   storage: 'bg-gray-100 text-gray-800',
@@ -27,6 +33,10 @@ export default function MachineDetailPage() {
   const [logs, setLogs] = useState<MaintenanceLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [generatingQR, setGeneratingQR] = useState(false);
+  const [showLinkTag, setShowLinkTag] = useState(false);
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [selectedTag, setSelectedTag] = useState('');
+  const [linkingTag, setLinkingTag] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -55,6 +65,42 @@ const handleGenerateQR = async () => {
       alert(error.message || 'Failed to generate QR code');
     } finally {
       setGeneratingQR(false);
+    }
+  };
+
+  const handleOpenLinkTag = async () => {
+    setShowLinkTag(true);
+    try {
+      const tags = await api.getTags({ status: 'unlinked' });
+      setAvailableTags(tags);
+    } catch (error) {
+      console.error('Failed to fetch tags:', error);
+    }
+  };
+
+  const handleLinkTag = async () => {
+    if (!selectedTag) return;
+    setLinkingTag(true);
+    try {
+      await api.linkTagToMachine(selectedTag, params.id as string);
+      setMachine({ ...machine, assetTag: selectedTag });
+      setShowLinkTag(false);
+      setSelectedTag('');
+    } catch (error: any) {
+      alert(error.message || 'Failed to link tag');
+    } finally {
+      setLinkingTag(false);
+    }
+  };
+
+  const handleUnlinkTag = async () => {
+    if (!machine.assetTag) return;
+    if (!confirm('Are you sure you want to unlink this asset tag?')) return;
+    try {
+      await api.unlinkTag(machine.assetTag);
+      setMachine({ ...machine, assetTag: null });
+    } catch (error: any) {
+      alert(error.message || 'Failed to unlink tag');
     }
   };
 
@@ -239,6 +285,92 @@ const handleGenerateQR = async () => {
           </div>
         )}
       </div>
+
+      {/* Asset Tag */}
+      <div className="bg-white rounded-lg shadow p-4 md:p-6 mt-4 md:mt-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Asset Tag</h2>
+          {machine.assetTag ? (
+            <button
+              onClick={handleUnlinkTag}
+              className="text-sm text-red-600 hover:text-red-800"
+            >
+              Unlink Tag
+            </button>
+          ) : (
+            <button
+              onClick={handleOpenLinkTag}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Link Tag
+            </button>
+          )}
+        </div>
+        {machine.assetTag ? (
+          <div className="flex flex-col items-center">
+            <div className="bg-white p-4 border rounded-lg">
+              <QRCodeSVG
+                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/m/${machine.assetTag}`}
+                size={180}
+              />
+            </div>
+            <p className="font-mono text-lg font-bold mt-3">{machine.assetTag}</p>
+            <p className="text-xs text-gray-400 mt-1">Scan to view machine info</p>
+          </div>
+        ) : (
+          <div className="text-center py-6 text-gray-400">
+            <p>No asset tag linked</p>
+            <p className="text-xs mt-1">Click Link Tag to attach a pre-printed sticker</p>
+          </div>
+        )}
+      </div>
+
+      {/* Link Tag Modal */}
+      {showLinkTag && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">Link Asset Tag</h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Select an unlinked tag to attach to this machine, or enter the tag ID from a sticker.
+            </p>
+            <select
+              value={selectedTag}
+              onChange={(e) => setSelectedTag(e.target.value)}
+              className="w-full border rounded px-3 py-2 mb-4"
+            >
+              <option value="">Select a tag...</option>
+              {availableTags.map((tag) => (
+                <option key={tag._id} value={tag.token}>
+                  {tag.token}
+                </option>
+              ))}
+            </select>
+            <div className="text-center text-gray-400 text-sm mb-4">or</div>
+            <input
+              type="text"
+              placeholder="Enter tag ID (e.g., VDV-ABC123)"
+              value={selectedTag}
+              onChange={(e) => setSelectedTag(e.target.value.toUpperCase())}
+              className="w-full border rounded px-3 py-2 mb-4 font-mono"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowLinkTag(false); setSelectedTag(''); }}
+                className="flex-1 border border-gray-300 px-4 py-2 rounded hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLinkTag}
+                disabled={!selectedTag || linkingTag}
+                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {linkingTag ? 'Linking...' : 'Link Tag'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Notes */}
       {machine.inventoryNotes && (
