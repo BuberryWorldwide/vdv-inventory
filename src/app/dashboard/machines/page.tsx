@@ -11,6 +11,7 @@ interface Machine {
   name: string;
   displayName?: string;
   hubId?: string;
+  hubDisplayName?: string;
   storeId?: { _id: string; storeName: string };
   derivedVenue?: string;
   status: string;
@@ -142,8 +143,8 @@ function MachinesContent() {
           bVal = `${b.manufacturer || ''} ${b.machineModel || ''}`.trim();
           break;
         case 'hubId':
-          aVal = a.hubId || '';
-          bVal = b.hubId || '';
+          aVal = a.hubDisplayName || a.hubId || '';
+          bVal = b.hubDisplayName || b.hubId || '';
           break;
         case 'venue':
           aVal = a.storeId?.storeName || a.derivedVenue || '';
@@ -320,7 +321,7 @@ function MachinesContent() {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {machine.hubId || '-'}
+                  {machine.hubDisplayName || machine.hubId || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {machine.storeId?.storeName || machine.derivedVenue || '-'}
