@@ -63,9 +63,23 @@ export const api = {
   },
 
   // Machines
-  getMachines: async (status?: string) => {
-    const url = status ? `/api/machines?status=${status}` : '/api/machines';
+  getMachines: async (filters?: { status?: string; hubId?: string; physicalStatus?: string }) => {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.hubId) params.append('hubId', filters.hubId);
+    if (filters?.physicalStatus) params.append('physicalStatus', filters.physicalStatus);
+    const url = params.toString() ? `/api/machines?${params}` : '/api/machines';
     const res = await fetchAPI(url);
+    return res.json();
+  },
+
+  getMachinesByHub: async () => {
+    const res = await fetchAPI('/api/machines/by-hub');
+    return res.json();
+  },
+
+  getHubs: async () => {
+    const res = await fetchAPI('/api/hubs');
     return res.json();
   },
 
