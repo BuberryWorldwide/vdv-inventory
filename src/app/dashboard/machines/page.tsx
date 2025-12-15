@@ -47,19 +47,43 @@ function MachinesContent() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+      <div className="flex justify-between items-center mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">
           Machines {statusFilter && `(${statusFilter})`}
         </h1>
         <Link
           href="/dashboard/machines/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-3 py-2 text-sm md:px-4 md:text-base rounded hover:bg-blue-700"
         >
           Add Machine
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Mobile card view */}
+      <div className="md:hidden space-y-3">
+        {machines.map((machine) => (
+          <Link key={machine._id} href={`/dashboard/machines/${machine._id}`}>
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-semibold text-gray-900">{machine.machineId}</p>
+                  <p className="text-sm text-gray-500">{machine.manufacturer} {machine.model}</p>
+                  <p className="text-sm text-gray-400 mt-1">{machine.storeId?.name || machine.currentLocation}</p>
+                </div>
+                <span className={`px-2 py-1 text-xs rounded-full ${statusColors[machine.status]}`}>
+                  {machine.status}
+                </span>
+              </div>
+            </div>
+          </Link>
+        ))}
+        {machines.length === 0 && (
+          <div className="text-center py-10 text-gray-500">No machines found</div>
+        )}
+      </div>
+
+      {/* Desktop table view */}
+      <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>

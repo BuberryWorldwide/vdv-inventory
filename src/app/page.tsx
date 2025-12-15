@@ -32,9 +32,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h1 className="text-2xl font-bold text-white mb-6 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
+      <div className="bg-gray-800 p-6 md:p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h1 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
           VDV Inventory
         </h1>
         <form onSubmit={handleSubmit}>
@@ -43,14 +43,14 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter password"
-            className="w-full p-3 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:outline-none mb-4"
+            className="w-full p-4 md:p-3 rounded bg-gray-700 text-white text-base border border-gray-600 focus:border-blue-500 focus:outline-none mb-4"
             autoFocus
           />
           {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white p-3 rounded font-semibold hover:bg-blue-700 disabled:opacity-50"
+            className="w-full bg-blue-600 text-white p-4 md:p-3 rounded font-semibold hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>

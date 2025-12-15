@@ -57,16 +57,16 @@ function NewMaintenanceContent() {
   };
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Log Maintenance</h1>
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-4">
+    <div className="max-w-2xl mx-auto">
+      <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">Log Maintenance</h1>
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-4 md:p-6 space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Machine *</label>
           <select
             required
             value={form.machineId}
             onChange={(e) => setForm({ ...form, machineId: e.target.value })}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 md:py-2 text-base"
           >
             <option value="">Select a machine</option>
             {machines.map((machine) => (
@@ -77,7 +77,7 @@ function NewMaintenanceContent() {
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
             <input
@@ -85,7 +85,7 @@ function NewMaintenanceContent() {
               required
               value={form.date}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
           </div>
           <div>
@@ -94,7 +94,7 @@ function NewMaintenanceContent() {
               required
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             >
               <option value="preventive">Preventive</option>
               <option value="repair">Repair</option>
@@ -112,7 +112,7 @@ function NewMaintenanceContent() {
             required
             value={form.technician}
             onChange={(e) => setForm({ ...form, technician: e.target.value })}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 md:py-2 text-base"
             placeholder="Name of technician"
           />
         </div>
@@ -123,20 +123,20 @@ function NewMaintenanceContent() {
             required
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 md:py-2 text-base"
             rows={4}
             placeholder="Describe the work performed..."
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Parts Replaced</label>
             <input
               type="text"
               value={form.partsReplaced}
               onChange={(e) => setForm({ ...form, partsReplaced: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
               placeholder="Comma-separated list"
             />
           </div>
@@ -146,26 +146,26 @@ function NewMaintenanceContent() {
               type="number"
               value={form.cost}
               onChange={(e) => setForm({ ...form, cost: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
               placeholder="0.00"
             />
           </div>
         </div>
 
-        <div className="flex gap-4 pt-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? 'Saving...' : 'Save Log'}
-          </button>
+        <div className="flex flex-col-reverse md:flex-row gap-3 md:gap-4 pt-4">
           <Link
             href={preselectedMachine ? `/dashboard/machines/${preselectedMachine}` : '/dashboard/maintenance'}
-            className="px-6 py-2 border rounded hover:bg-gray-50"
+            className="px-6 py-3 md:py-2 border rounded hover:bg-gray-50 text-center"
           >
             Cancel
           </Link>
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-blue-600 text-white px-6 py-3 md:py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : 'Save Log'}
+          </button>
         </div>
       </form>
     </div>

@@ -37,17 +37,46 @@ export default function MaintenancePage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Maintenance Logs</h1>
+      <div className="flex justify-between items-center mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Maintenance</h1>
         <Link
           href="/dashboard/maintenance/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-3 py-2 text-sm md:px-4 md:text-base rounded hover:bg-blue-700"
         >
           Log Maintenance
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Mobile card view */}
+      <div className="md:hidden space-y-3">
+        {logs.map((log) => (
+          <div key={log._id} className="bg-white rounded-lg shadow p-4">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <Link href={`/dashboard/machines/${log.machineId?._id}`} className="font-semibold text-blue-600">
+                  {log.machineId?.machineId || 'Unknown'}
+                </Link>
+                <p className="text-xs text-gray-400">{log.machineId?.manufacturer} {log.machineId?.model}</p>
+              </div>
+              <span className={`px-2 py-1 text-xs rounded-full ${typeColors[log.type]}`}>
+                {log.type}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 line-clamp-2">{log.description}</p>
+            <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+              <span>{new Date(log.date).toLocaleDateString()}</span>
+              <span>{log.technician}</span>
+              {log.cost && <span>${log.cost}</span>}
+            </div>
+          </div>
+        ))}
+        {logs.length === 0 && (
+          <div className="text-center py-10 text-gray-500">No maintenance logs found</div>
+        )}
+      </div>
+
+      {/* Desktop table view */}
+      <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>

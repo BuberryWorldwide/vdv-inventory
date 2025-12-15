@@ -55,10 +55,10 @@ export default function NewMachinePage() {
   };
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Add Machine</h1>
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+    <div className="max-w-2xl mx-auto">
+      <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">Add Machine</h1>
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-4 md:p-6 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Machine ID *</label>
             <input
@@ -66,7 +66,7 @@ export default function NewMachinePage() {
               required
               value={form.machineId}
               onChange={(e) => setForm({ ...form, machineId: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
               placeholder="VDV-001"
             />
           </div>
@@ -76,7 +76,7 @@ export default function NewMachinePage() {
               type="text"
               value={form.gambinoMachineId}
               onChange={(e) => setForm({ ...form, gambinoMachineId: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
               placeholder="For future sync"
             />
           </div>
@@ -89,11 +89,11 @@ export default function NewMachinePage() {
             required
             value={form.serialNumber}
             onChange={(e) => setForm({ ...form, serialNumber: e.target.value })}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 md:py-2 text-base"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Manufacturer *</label>
             <input
@@ -101,7 +101,7 @@ export default function NewMachinePage() {
               required
               value={form.manufacturer}
               onChange={(e) => setForm({ ...form, manufacturer: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
               placeholder="IGT, Aristocrat, etc."
             />
           </div>
@@ -112,19 +112,19 @@ export default function NewMachinePage() {
               required
               value={form.model}
               onChange={(e) => setForm({ ...form, model: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label>
             <input
               type="date"
               value={form.purchaseDate}
               onChange={(e) => setForm({ ...form, purchaseDate: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             />
           </div>
           <div>
@@ -133,7 +133,7 @@ export default function NewMachinePage() {
               type="number"
               value={form.purchasePrice}
               onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
               placeholder="0.00"
             />
           </div>
@@ -145,17 +145,17 @@ export default function NewMachinePage() {
             type="text"
             value={form.romVersion}
             onChange={(e) => setForm({ ...form, romVersion: e.target.value })}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 md:py-2 text-base"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <select
               value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             >
               <option value="storage">In Storage</option>
               <option value="deployed">Deployed</option>
@@ -168,7 +168,7 @@ export default function NewMachinePage() {
             <select
               value={form.storeId}
               onChange={(e) => setForm({ ...form, storeId: e.target.value })}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-3 md:py-2 text-base"
             >
               <option value="">None (Warehouse)</option>
               {stores.map((store) => (
@@ -185,22 +185,22 @@ export default function NewMachinePage() {
           <textarea
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-3 md:py-2 text-base"
             rows={3}
           />
         </div>
 
-        <div className="flex gap-4 pt-4">
+        <div className="flex flex-col-reverse md:flex-row gap-3 md:gap-4 pt-4">
+          <Link href="/dashboard/machines" className="px-6 py-3 md:py-2 border rounded hover:bg-gray-50 text-center">
+            Cancel
+          </Link>
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="bg-blue-600 text-white px-6 py-3 md:py-2 rounded hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? 'Saving...' : 'Save Machine'}
           </button>
-          <Link href="/dashboard/machines" className="px-6 py-2 border rounded hover:bg-gray-50">
-            Cancel
-          </Link>
         </div>
       </form>
     </div>

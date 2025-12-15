@@ -64,13 +64,13 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">Dashboard</h1>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
         {statCards.map((card) => (
           <Link key={card.label} href={card.href}>
-            <div className={`${card.color} rounded-lg p-6 text-white shadow-lg hover:opacity-90 transition`}>
-              <p className="text-sm font-medium opacity-90">{card.label}</p>
-              <p className="text-4xl font-bold mt-2">{card.value}</p>
+            <div className={`${card.color} rounded-lg p-4 md:p-6 text-white shadow-lg hover:opacity-90 transition`}>
+              <p className="text-xs md:text-sm font-medium opacity-90">{card.label}</p>
+              <p className="text-2xl md:text-4xl font-bold mt-1 md:mt-2">{card.value}</p>
             </div>
           </Link>
         ))}
