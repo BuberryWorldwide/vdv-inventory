@@ -117,6 +117,24 @@ export const api = {
     return res.json();
   },
 
+  generateMachineQR: async (id: string) => {
+    const res = await fetchAPI(`/api/machines/${id}/generate-qr`, { method: 'POST' });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
+
+  getMachineByToken: async (token: string) => {
+    const res = await fetch(`${API_URL}/api/machines/by-token/${token}`);
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+    return res.json();
+  },
+
   // Maintenance
   getMaintenanceLogs: async (machineId?: string) => {
     const url = machineId ? `/api/maintenance?machineId=${machineId}` : '/api/maintenance';

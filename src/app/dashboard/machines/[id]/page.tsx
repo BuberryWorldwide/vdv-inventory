@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface MaintenanceLog {
   _id: string;
@@ -25,6 +26,7 @@ export default function MachineDetailPage() {
   const [machine, setMachine] = useState<any>(null);
   const [logs, setLogs] = useState<MaintenanceLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [generatingQR, setGeneratingQR] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -43,6 +45,18 @@ export default function MachineDetailPage() {
     }
     fetchData();
   }, [params.id]);
+
+const handleGenerateQR = async () => {
+    setGeneratingQR(true);
+    try {
+      const result = await api.generateMachineQR(params.id as string);
+      setMachine({ ...machine, qrCode: result.qrCode, qrToken: result.qrToken, qrGeneratedAt: result.qrGeneratedAt });
+    } catch (error: any) {
+      alert(error.message || 'Failed to generate QR code');
+    } finally {
+      setGeneratingQR(false);
+    }
+  };
 
   if (loading) return <div className="text-center py-10">Loading...</div>;
   if (!machine) return <div className="text-center py-10">Machine not found</div>;
@@ -188,6 +202,38 @@ export default function MachineDetailPage() {
             </div>
           </dl>
         </div>
+      </div>
+
+      {/* QR Code */}
+      <div className="bg-white rounded-lg shadow p-4 md:p-6 mt-4 md:mt-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">QR Code</h2>
+          <button
+            onClick={handleGenerateQR}
+            disabled={generatingQR}
+            className="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
+          >
+            {generatingQR ? 'Generating...' : machine.qrCode ? 'Regenerate' : 'Generate QR'}
+          </button>
+        </div>
+        {machine.qrCode ? (
+          <div className="flex flex-col items-center">
+            <div className="bg-white p-4 border rounded-lg">
+              <QRCodeSVG value={machine.qrCode} size={180} />
+            </div>
+            <p className="text-xs text-gray-400 mt-2 break-all text-center max-w-xs">{machine.qrCode}</p>
+            {machine.qrGeneratedAt && (
+              <p className="text-xs text-gray-400 mt-1">
+                Generated: {new Date(machine.qrGeneratedAt).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-6 text-gray-400">
+            <p>No QR code generated yet</p>
+            <p className="text-xs mt-1">Click Generate QR to create one</p>
+          </div>
+        )}
       </div>
 
       {/* Notes */}
